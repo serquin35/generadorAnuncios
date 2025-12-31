@@ -61,18 +61,63 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'Error en el motor de generación' }, { status: 500 })
             }
 
-            // Parse result from n8n (Expects { output_image_url: "..." })
+            // Parse result from n8n
+            console.log('n8n response status:', n8nResponse.status)
             const n8nData = await n8nResponse.json()
-            const result = Array.isArray(n8nData) ? n8nData[0] : n8nData;
+            console.log('n8n response data received')
 
-            if (result && (result.output_image_url || result.url)) {
-                const finalImageUrl = result.output_image_url || result.url;
+            // Helper to find image in nested object
+            const findImage = (obj: any): string | null => {
+                if (!obj) return null;
+                if (typeof obj === 'string') {
+                    if (obj.startsWith('http') || obj.startsWith('data:image')) return obj;
+                    if (obj.length > 1000) return obj; // Likely base64
+                    return null;
+                }
+                if (Array.isArray(obj)) {
+                    for (const item of obj) {
+                        const img = findImage(item);
+                        if (img) return img;
+                    }
+                }
+                if (typeof obj === 'object') {
+                    // Priority keys
+                    const priorityKeys = ['image', 'base64', 'output_image_url', 'url', 'data'];
+                    for (const key of priorityKeys) {
+                        const img = findImage(obj[key]);
+                        if (img) {
+                            console.log(`Image found in key: ${key}`);
+                            return img;
+                        }
+                    }
+                    // Scan all keys
+                    for (const key in obj) {
+                        const img = findImage(obj[key]);
+                        if (img) {
+                            console.log(`Image found in key: ${key}`);
+                            return img;
+                        }
+                    }
+                }
+                return null;
+            };
+
+            const finalImageValue = findImage(n8nData);
+
+            if (finalImageValue) {
+                console.log('Valid image found in n8n response. Length:', finalImageValue.length)
+                let cleanedImage = finalImageValue;
+
+                // If it's pure base64 without prefix, add it
+                if (cleanedImage.length > 1000 && !cleanedImage.startsWith('http') && !cleanedImage.startsWith('data:')) {
+                    cleanedImage = `data:image/png;base64,${cleanedImage}`;
+                }
 
                 await prisma.job.update({
                     where: { id: job.id },
                     data: {
                         status: 'completed',
-                        outputImageUrl: finalImageUrl,
+                        outputImageUrl: cleanedImage,
                         completedAt: new Date(),
                     },
                 })
@@ -80,9 +125,11 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({
                     job_id: job.id,
                     status: 'completed',
-                    output_image_url: finalImageUrl,
+                    output_image_url: cleanedImage,
                 }, { status: 201 })
             }
+
+            console.log('No valid image found in n8n response. Data keys:', Object.keys(n8nData))
 
             // If no image but successful response, stay in running or mark as error
             await prisma.job.update({

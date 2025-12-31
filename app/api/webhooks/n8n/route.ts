@@ -93,16 +93,28 @@ export async function POST(request: NextRequest) {
         }
 
         if (body.status === 'completed') {
-            if (body.output_image_url) {
-                updateData.outputImageUrl = body.output_image_url
-            } else if (body.image) {
-                updateData.outputImageUrl = `data:image/png;base64,${body.image}`
+            const findImage = (obj: any): string | null => {
+                if (!obj) return null;
+                if (typeof obj === 'string') {
+                    if (obj.startsWith('http') || obj.startsWith('data:image')) return obj;
+                    if (obj.length > 1000) return obj;
+                    return null;
+                }
+                const priorityKeys = ['image', 'base64', 'output_image_url', 'url', 'data'];
+                for (const key of priorityKeys) {
+                    const img = findImage(obj[key as keyof typeof obj]);
+                    if (img) return img;
+                }
+                return null;
+            };
+
+            const finalImage = findImage(body);
+            if (finalImage) {
+                updateData.outputImageUrl = finalImage;
+                if (updateData.outputImageUrl.length > 1000 && !updateData.outputImageUrl.startsWith('http') && !updateData.outputImageUrl.startsWith('data:')) {
+                    updateData.outputImageUrl = `data:image/png;base64,${updateData.outputImageUrl}`;
+                }
             }
-            /* 
-            if (body.description) {
-                updateData.adCopy = body.description 
-            }
-            */
         }
 
         if (body.status === 'failed' && body.error) {
