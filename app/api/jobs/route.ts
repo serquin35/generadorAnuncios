@@ -133,6 +133,8 @@ export async function GET() {
             output: job.outputImageUrl ? {
                 image_url: job.outputImageUrl,
                 generated_at: job.completedAt?.toISOString() || '',
+                // ad_copy: (job as any).adCopy || null, // Comentado para evitar error de Prisma
+                ad_copy: null, // Usando null por ahora
             } : null,
             error: job.errorMessage ? {
                 code: job.errorCode || 'UNKNOWN',

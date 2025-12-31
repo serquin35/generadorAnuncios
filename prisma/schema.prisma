@@ -69,7 +69,6 @@ model Job {
   errorCode       String?
   errorMessage    String?
   n8nExecutionId  String?
-  adCopy          String?   @db.Text
   attempts        Int       @default(0)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

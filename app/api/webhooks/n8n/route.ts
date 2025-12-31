@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
             outputImageUrl?: string
             errorCode?: string
             errorMessage?: string
-            adCopy?: string // Add adCopy to updateData type
+            // adCopy?: string // Temporarily commented to avoid crash
         } = {
             status: body.status,
             completedAt: new Date(),
@@ -98,9 +98,11 @@ export async function POST(request: NextRequest) {
             } else if (body.image) {
                 updateData.outputImageUrl = `data:image/png;base64,${body.image}`
             }
+            /* 
             if (body.description) {
-                updateData.adCopy = body.description // Directly assign to adCopy
+                updateData.adCopy = body.description 
             }
+            */
         }
 
         if (body.status === 'failed' && body.error) {
