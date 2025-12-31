@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
             },
         })
 
-        // Trigger n8n webhook using simple JSON
+        // Trigger n8n webhook and WAIT for response (Synchronous Flow)
         try {
             const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL!, {
                 method: 'POST',
@@ -50,58 +50,66 @@ export async function POST(request: NextRequest) {
             })
 
             if (!n8nResponse.ok) {
-                // Update job as failed
                 await prisma.job.update({
                     where: { id: job.id },
                     data: {
                         status: 'failed',
                         errorCode: 'N8N_ERROR',
-                        errorMessage: `n8n webhook returned ${n8nResponse.status}`,
+                        errorMessage: `n8n respondió con error ${n8nResponse.status}`,
+                    },
+                })
+                return NextResponse.json({ error: 'Error en el motor de generación' }, { status: 500 })
+            }
+
+            // Parse result from n8n (Expects { output_image_url: "..." })
+            const n8nData = await n8nResponse.json()
+            const result = Array.isArray(n8nData) ? n8nData[0] : n8nData;
+
+            if (result && (result.output_image_url || result.url)) {
+                const finalImageUrl = result.output_image_url || result.url;
+
+                await prisma.job.update({
+                    where: { id: job.id },
+                    data: {
+                        status: 'completed',
+                        outputImageUrl: finalImageUrl,
+                        completedAt: new Date(),
                     },
                 })
 
-                return NextResponse.json(
-                    { error: 'Error al enviar a n8n' },
-                    { status: 500 }
-                )
+                return NextResponse.json({
+                    job_id: job.id,
+                    status: 'completed',
+                    output_image_url: finalImageUrl,
+                }, { status: 201 })
             }
 
-            // Update job to running
+            // If no image but successful response, stay in running or mark as error
             await prisma.job.update({
                 where: { id: job.id },
                 data: { status: 'running' },
             })
 
+            return NextResponse.json({
+                job_id: job.id,
+                status: 'running',
+            }, { status: 201 })
+
         } catch (n8nError) {
             console.error('Error calling n8n:', n8nError)
-
             await prisma.job.update({
                 where: { id: job.id },
                 data: {
                     status: 'failed',
                     errorCode: 'N8N_CONNECTION_ERROR',
-                    errorMessage: 'No se pudo conectar con n8n',
+                    errorMessage: 'Error de comunicación con el motor de IA',
                 },
             })
-
-            return NextResponse.json(
-                { error: 'Error conectando con n8n' },
-                { status: 500 }
-            )
+            return NextResponse.json({ error: 'Error de conexión' }, { status: 500 })
         }
-
-        return NextResponse.json({
-            job_id: job.id,
-            status: 'running',
-            created_at: job.createdAt.toISOString(),
-        }, { status: 201 })
-
     } catch (error) {
         console.error('Error in POST /api/jobs:', error)
-        return NextResponse.json(
-            { error: 'Error interno del servidor' },
-            { status: 500 }
-        )
+        return NextResponse.json({ error: 'Error interno' }, { status: 500 })
     }
 }
 
