@@ -134,13 +134,13 @@ export default function JobDetailPage({
                             </h2>
                             <div className="rounded-xl overflow-hidden bg-black/20">
                                 <img
-                                    src={`/api/proxy-image?url=${encodeURIComponent(job.output.image_url)}`}
+                                    src={`/api/proxy-image?url=${encodeURIComponent(job.output!.image_url)}`}
                                     alt="Generated advertisement"
                                     className="w-full"
                                 />
                             </div>
                             <button
-                                onClick={() => handleDownload(`/api/proxy-image?url=${encodeURIComponent(job.output.image_url)}`, `nanobanana-ad-${job.id}.png`)}
+                                onClick={() => handleDownload(`/api/proxy-image?url=${encodeURIComponent(job.output!.image_url)}`, `nanobanana-ad-${job.id}.png`)}
                                 className="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all"
                             >
                                 📥 Descargar Imagen
