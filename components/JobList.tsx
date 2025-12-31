@@ -19,25 +19,29 @@ export default function JobList({ initialJobs }: JobListProps) {
     const [jobs, setJobs] = useState<Job[]>(initialJobs)
 
     // Polling for updates when there are pending/running jobs
+    // Polling for updates
     useEffect(() => {
-        const hasPendingJobs = jobs.some(job => job.status === 'pending' || job.status === 'running')
-
-        if (!hasPendingJobs) return
-
-        const interval = setInterval(async () => {
+        const fetchJobs = async () => {
             try {
                 const response = await fetch('/api/jobs')
                 if (response.ok) {
                     const data = await response.json()
-                    setJobs(data.jobs)
+                    setJobs(data.jobs || [])
                 }
             } catch (error) {
-                console.error('Error polling jobs:', error)
+                console.error('Error fetching jobs:', error)
             }
-        }, 3000) // Poll every 3 seconds
+        }
 
+        fetchJobs()
+        const interval = setInterval(fetchJobs, 3000)
         return () => clearInterval(interval)
-    }, [jobs])
+    }, [])
+
+    // Sync state with initialJobs prop when it changes (e.g. from router.refresh())
+    useEffect(() => {
+        setJobs(initialJobs)
+    }, [initialJobs])
 
     const handleDelete = async (e: React.MouseEvent, id: string) => {
         e.preventDefault()
@@ -118,6 +122,13 @@ export default function JobList({ initialJobs }: JobListProps) {
                             {job.status === 'failed' && job.error && (
                                 <p className="mt-2 text-red-400 text-sm truncate">
                                     {job.error.message}
+                                </p>
+                            )}
+
+                            {/* Ad copy preview if completed */}
+                            {job.status === 'completed' && job.output?.ad_copy && (
+                                <p className="mt-2 text-gray-400 text-xs italic line-clamp-2">
+                                    {job.output.ad_copy}
                                 </p>
                             )}
                         </Link>

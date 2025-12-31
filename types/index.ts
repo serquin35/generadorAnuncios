@@ -12,6 +12,7 @@ export interface JobInput {
 export interface JobOutput {
     image_url: string
     generated_at: string
+    ad_copy?: string
 }
 
 // Job Error Structure
@@ -73,6 +74,8 @@ export interface N8NCallbackPayload {
     job_id: string
     status: 'completed' | 'failed'
     image?: string // base64 encoded PNG
+    output_image_url?: string
+    description?: string
     error?: {
         code: string
         message: string
