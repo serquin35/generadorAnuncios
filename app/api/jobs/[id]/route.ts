@@ -60,3 +60,48 @@ export async function GET(
         )
     }
 }
+
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params
+        const session = await auth()
+
+        if (!session?.user) {
+            return NextResponse.json(
+                { error: 'No autorizado' },
+                { status: 401 }
+            )
+        }
+
+        // Verify ownership and delete
+        const job = await prisma.job.findFirst({
+            where: {
+                id,
+                userId: session.user.id,
+            },
+        })
+
+        if (!job) {
+            return NextResponse.json(
+                { error: 'Job no encontrado o no pertenece al usuario' },
+                { status: 404 }
+            )
+        }
+
+        await prisma.job.delete({
+            where: { id },
+        })
+
+        return NextResponse.json({ success: true, message: 'Anuncio eliminado correctamente' })
+
+    } catch (error) {
+        console.error('Error in DELETE /api/jobs/[id]:', error)
+        return NextResponse.json(
+            { error: 'Error interno del servidor al eliminar' },
+            { status: 500 }
+        )
+    }
+}

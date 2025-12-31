@@ -39,6 +39,28 @@ export default function JobList({ initialJobs }: JobListProps) {
         return () => clearInterval(interval)
     }, [jobs])
 
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (!confirm('¿Estás seguro de que quieres eliminar este anuncio?')) return
+
+        try {
+            const response = await fetch(`/api/jobs/${id}`, {
+                method: 'DELETE',
+            })
+
+            if (response.ok) {
+                setJobs(jobs.filter(job => job.id !== id))
+            } else {
+                alert('Error al eliminar el anuncio')
+            }
+        } catch (error) {
+            console.error('Error deleting job:', error)
+            alert('Error de conexión al eliminar')
+        }
+    }
+
     if (jobs.length === 0) {
         return (
             <div className="text-center py-12">
@@ -55,50 +77,62 @@ export default function JobList({ initialJobs }: JobListProps) {
                 const status = statusConfig[job.status]
 
                 return (
-                    <Link
-                        key={job.id}
-                        href={`/dashboard/${job.id}`}
-                        className="block p-4 bg-white/5 rounded-xl border border-white/10 hover:border-yellow-500/30 transition-all group"
-                    >
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                                <p className="text-white font-medium truncate">
-                                    {job.input?.instructions?.slice(0, 50)}...
+                    <div key={job.id} className="relative group">
+                        <Link
+                            href={`/dashboard/${job.id}`}
+                            className="block p-4 bg-white/5 rounded-xl border border-white/10 hover:border-yellow-500/30 transition-all"
+                        >
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white font-medium truncate pr-8">
+                                        {job.input?.instructions || 'Sin instrucciones'}
+                                    </p>
+                                    <p className="text-gray-500 text-sm mt-1">
+                                        {new Date(job.created_at).toLocaleDateString('es-ES', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        })}
+                                    </p>
+                                </div>
+
+                                <div className={`px-3 py-1.5 rounded-full text-xs font-medium border ${status.color} flex items-center gap-1.5 shrink-0`}>
+                                    <span className={job.status === 'running' ? 'animate-spin' : ''}>{status.icon}</span>
+                                    {status.label}
+                                </div>
+                            </div>
+
+                            {/* Preview thumbnail if completed */}
+                            {job.status === 'completed' && job.output?.image_url && (
+                                <div className="mt-3 h-20 rounded-lg overflow-hidden bg-black/20">
+                                    <img
+                                        src={job.output.image_url}
+                                        alt="Generated ad"
+                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Error message if failed */}
+                            {job.status === 'failed' && job.error && (
+                                <p className="mt-2 text-red-400 text-sm truncate">
+                                    {job.error.message}
                                 </p>
-                                <p className="text-gray-500 text-sm mt-1">
-                                    {new Date(job.created_at).toLocaleDateString('es-ES', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
-                                </p>
-                            </div>
+                            )}
+                        </Link>
 
-                            <div className={`px-3 py-1.5 rounded-full text-xs font-medium border ${status.color} flex items-center gap-1.5 shrink-0`}>
-                                <span className={job.status === 'running' ? 'animate-spin' : ''}>{status.icon}</span>
-                                {status.label}
-                            </div>
-                        </div>
-
-                        {/* Preview thumbnail if completed */}
-                        {job.status === 'completed' && job.output?.image_url && (
-                            <div className="mt-3 h-20 rounded-lg overflow-hidden bg-black/20">
-                                <img
-                                    src={job.output.image_url}
-                                    alt="Generated ad"
-                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                />
-                            </div>
-                        )}
-
-                        {/* Error message if failed */}
-                        {job.status === 'failed' && job.error && (
-                            <p className="mt-2 text-red-400 text-sm truncate">
-                                {job.error.message}
-                            </p>
-                        )}
-                    </Link>
+                        {/* Delete Button */}
+                        <button
+                            onClick={(e) => handleDelete(e, job.id)}
+                            className="absolute top-4 right-20 p-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            title="Eliminar anuncio"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
                 )
             })}
         </div>
