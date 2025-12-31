@@ -1,26 +1,65 @@
-import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
+'use client'
 
-export default async function JobDetailPage({
+import { useState, useEffect } from 'react'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { Job } from '@/types'
+
+export default function JobDetailPage({
     params
 }: {
     params: Promise<{ id: string }>
 }) {
-    const { id } = await params
-    const session = await auth()
+    const [id, setId] = useState<string | null>(null)
+    const [job, setJob] = useState<Job | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
 
-    if (!session?.user) {
-        redirect('/login')
+    useEffect(() => {
+        params.then(p => setId(p.id))
+    }, [params])
+
+    useEffect(() => {
+        if (!id) return
+
+        const fetchJob = async () => {
+            try {
+                const res = await fetch('/api/jobs')
+                if (res.ok) {
+                    const data = await res.json()
+                    const foundJob = (data.jobs as Job[]).find(j => j.id === id)
+                    if (foundJob) {
+                        setJob(foundJob)
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching job details:', error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchJob()
+    }, [id])
+
+    const handleDownload = async (url: string, filename: string) => {
+        try {
+            const response = await fetch(url)
+            const blob = await response.blob()
+            const link = document.createElement('a')
+            link.href = URL.createObjectURL(blob)
+            link.download = filename
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        } catch (error) {
+            console.error('Error downloading image:', error)
+            alert('Error al descargar la imagen. Inténtalo de nuevo.')
+        }
     }
 
-    const job = await prisma.job.findFirst({
-        where: {
-            id,
-            userId: session.user.id,
-        },
-    })
+    if (isLoading) {
+        return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Cargando...</div>
+    }
 
     if (!job) {
         redirect('/dashboard')
@@ -33,7 +72,7 @@ export default async function JobDetailPage({
         failed: { color: 'bg-red-500/20 text-red-300', icon: '❌', label: 'Error' },
     }
 
-    const status = statusConfig[job.status as keyof typeof statusConfig] || statusConfig.pending
+    const status = statusConfig[job.status] || statusConfig.pending
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -67,7 +106,7 @@ export default async function JobDetailPage({
                         </span>
                     </div>
                     <p className="text-gray-400">
-                        Creado el {job.createdAt.toLocaleDateString('es-ES', {
+                        Creado el {new Date(job.created_at).toLocaleDateString('es-ES', {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',
@@ -84,29 +123,29 @@ export default async function JobDetailPage({
                         <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                             <span>📝</span> Instrucciones
                         </h2>
-                        <p className="text-gray-300 whitespace-pre-wrap">{job.instructions}</p>
+                        <p className="text-gray-300 whitespace-pre-wrap">{job.input.instructions}</p>
                     </div>
 
                     {/* Result */}
-                    {job.status === 'completed' && job.outputImageUrl && (
+                    {job.status === 'completed' && job.output?.image_url && (
                         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                                 <span>🎨</span> Resultado Generado
                             </h2>
                             <div className="rounded-xl overflow-hidden bg-black/20">
                                 <img
-                                    src={job.outputImageUrl}
+                                    src={job.output.image_url}
                                     alt="Generated advertisement"
                                     className="w-full"
+                                    referrerPolicy="no-referrer"
                                 />
                             </div>
-                            <a
-                                href={job.outputImageUrl}
-                                download={`nanobanana-ad-${job.id}.png`}
+                            <button
+                                onClick={() => handleDownload(job.output!.image_url, `nanobanana-ad-${job.id}.png`)}
                                 className="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all"
                             >
                                 📥 Descargar Imagen
-                            </a>
+                            </button>
                         </div>
                     )}
 
