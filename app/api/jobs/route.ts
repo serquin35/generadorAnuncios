@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const maxDuration = 300; // Allow long running for this route if needed
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request: NextRequest) {
     try {
         const session = await auth()
@@ -10,6 +14,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
                 { error: 'No autorizado' },
                 { status: 401 }
+            )
+        }
+
+        if (!process.env.N8N_WEBHOOK_URL) {
+            console.error('N8N_WEBHOOK_URL is not defined in environment variables')
+            return NextResponse.json(
+                { error: 'Configuración incompleta: Falta la URL del motor de IA' },
+                { status: 500 }
             )
         }
 
@@ -38,9 +50,12 @@ export async function POST(request: NextRequest) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for sync response
 
+        const protocol = request.headers.get('x-forwarded-proto') || 'http';
+        const host = request.headers.get('host');
+        const baseUrl = `${protocol}://${host}`;
+
         try {
             console.log(`Calling n8n (Hybrid): ${process.env.N8N_WEBHOOK_URL} (Job: ${job.id})`)
-            console.log(`Payload sizes - Instr: ${body.instructions.length}, Char: ${body.character_image.length}, Prod: ${body.product_image.length}`)
 
             const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL!, {
                 method: 'POST',
@@ -50,8 +65,9 @@ export async function POST(request: NextRequest) {
                 body: JSON.stringify({
                     job_id: job.id,
                     instructions: body.instructions,
-                    character_image: body.character_image,
-                    product_image: body.product_image,
+                    // Use URLs instead of heavy base64 to prevent connection errors
+                    character_image_url: `${baseUrl}/api/jobs/${job.id}/images/character`,
+                    product_image_url: `${baseUrl}/api/jobs/${job.id}/images/product`,
                 }),
                 signal: controller.signal
             })
@@ -160,17 +176,23 @@ export async function POST(request: NextRequest) {
                 }, { status: 202 })
             }
 
-            console.error('Error calling n8n:', n8nError)
+            console.error('CRITICAL Error calling n8n:', n8nError)
+            const errorMessage = n8nError.message || 'Error desconocido de red';
+
             await prisma.job.update({
                 where: { id: job.id },
                 data: {
                     status: 'failed',
                     errorCode: 'N8N_CONNECTION_ERROR',
-                    errorMessage: 'Error de comunicación con el motor de IA',
+                    errorMessage: `Error de red: ${errorMessage}`,
                 },
             })
 
-            return NextResponse.json({ error: 'Error de conexión' }, { status: 500 })
+            return NextResponse.json({
+                error: 'Error de comunicación con el servidor de IA',
+                details: errorMessage,
+                webhook_url: process.env.N8N_WEBHOOK_URL ? 'Configurada' : 'NO CONFIGURADA'
+            }, { status: 500 })
         }
     } catch (error) {
         console.error('Error in POST /api/jobs:', error)
