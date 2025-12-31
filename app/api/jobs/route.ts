@@ -34,12 +34,12 @@ export async function POST(request: NextRequest) {
             },
         })
 
-        // Trigger n8n webhook and WAIT for response (Synchronous Flow)
+        // Trigger n8n webhook and WAIT for response (Synchronous Flow with short timeout)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 80000); // 80s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for sync response
 
         try {
-            console.log(`Calling n8n at: ${process.env.N8N_WEBHOOK_URL} (Job: ${job.id})`)
+            console.log(`Calling n8n (Hybrid): ${process.env.N8N_WEBHOOK_URL} (Job: ${job.id})`)
             console.log(`Payload sizes - Instr: ${body.instructions.length}, Char: ${body.character_image.length}, Prod: ${body.product_image.length}`)
 
             const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL!, {
@@ -148,28 +148,27 @@ export async function POST(request: NextRequest) {
 
         } catch (n8nError: any) {
             clearTimeout(timeoutId);
-            console.error('Error calling n8n:', n8nError)
-
-            // If it's a timeout or network error, let it stay in "running"
-            // just in case n8n finishes and calls the webhook later
             const isTimeout = n8nError.name === 'AbortError' || n8nError.message?.includes('timeout');
 
-            await prisma.job.update({
-                where: { id: job.id },
-                data: {
-                    status: isTimeout ? 'running' : 'failed',
-                    errorCode: isTimeout ? 'N8N_TIMEOUT' : 'N8N_CONNECTION_ERROR',
-                    errorMessage: isTimeout ? 'La generación está tardando más de lo esperado...' : 'Error de comunicación con el motor de IA',
-                },
-            })
-
             if (isTimeout) {
+                console.log(`Sync timeout for job ${job.id}. Generation continues in background.`)
+                // Return 202 Accepted. The UI will show "Generating..." thanks to polling.
                 return NextResponse.json({
-                    message: 'La generación continúa en segundo plano. El dashboard se actualizará pronto.',
+                    message: 'La generación está en marcha. Se actualizará en unos segundos.',
                     job_id: job.id,
                     status: 'running'
                 }, { status: 202 })
             }
+
+            console.error('Error calling n8n:', n8nError)
+            await prisma.job.update({
+                where: { id: job.id },
+                data: {
+                    status: 'failed',
+                    errorCode: 'N8N_CONNECTION_ERROR',
+                    errorMessage: 'Error de comunicación con el motor de IA',
+                },
+            })
 
             return NextResponse.json({ error: 'Error de conexión' }, { status: 500 })
         }
