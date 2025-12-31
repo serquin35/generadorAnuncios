@@ -1,0 +1,120 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import crypto from 'crypto'
+
+interface N8NCallbackPayload {
+    job_id: string
+    status: 'completed' | 'failed'
+    image?: string // base64 encoded PNG
+    error?: {
+        code: string
+        message: string
+    }
+    timestamp: string
+    signature?: string
+}
+
+// Validate HMAC signature
+function validateSignature(payload: string, signature: string): boolean {
+    const secret = process.env.N8N_CALLBACK_SECRET
+    if (!secret) {
+        console.warn('N8N_CALLBACK_SECRET not configured, skipping validation')
+        return true // In development, allow without signature
+    }
+
+    const expectedSig = crypto
+        .createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex')
+
+    try {
+        return crypto.timingSafeEqual(
+            Buffer.from(signature),
+            Buffer.from(expectedSig)
+        )
+    } catch {
+        return false
+    }
+}
+
+export async function POST(request: NextRequest) {
+    try {
+        const rawBody = await request.text()
+        const body: N8NCallbackPayload = JSON.parse(rawBody)
+
+        // Validate signature (optional in development)
+        if (body.signature && !validateSignature(rawBody, body.signature)) {
+            console.error('Invalid signature in n8n callback')
+            return NextResponse.json(
+                { error: 'Invalid signature' },
+                { status: 401 }
+            )
+        }
+
+        // Validate required fields
+        if (!body.job_id || !body.status) {
+            return NextResponse.json(
+                { error: 'Missing required fields: job_id, status' },
+                { status: 400 }
+            )
+        }
+
+        // Check if job exists
+        const existingJob = await prisma.job.findUnique({
+            where: { id: body.job_id },
+        })
+
+        if (!existingJob) {
+            return NextResponse.json(
+                { error: 'Job not found' },
+                { status: 404 }
+            )
+        }
+
+        // Idempotency: if already completed or failed, ignore
+        if (existingJob.status === 'completed' || existingJob.status === 'failed') {
+            console.log(`Job ${body.job_id} already finalized, ignoring duplicate callback`)
+            return NextResponse.json({ message: 'Job already finalized' })
+        }
+
+        // Prepare update data
+        const updateData: {
+            status: string
+            completedAt: Date
+            outputImageUrl?: string
+            errorCode?: string
+            errorMessage?: string
+        } = {
+            status: body.status,
+            completedAt: new Date(),
+        }
+
+        if (body.status === 'completed' && body.image) {
+            updateData.outputImageUrl = `data:image/png;base64,${body.image}`
+        }
+
+        if (body.status === 'failed' && body.error) {
+            updateData.errorCode = body.error.code
+            updateData.errorMessage = body.error.message
+        }
+
+        // Update job
+        await prisma.job.update({
+            where: { id: body.job_id },
+            data: updateData,
+        })
+
+        return NextResponse.json({
+            message: 'Job updated successfully',
+            job_id: body.job_id,
+            status: body.status,
+        })
+
+    } catch (error) {
+        console.error('Error in n8n webhook:', error)
+        return NextResponse.json(
+            { error: 'Error processing callback' },
+            { status: 500 }
+        )
+    }
+}

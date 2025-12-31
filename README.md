@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NanoBanana Ad Generator 🍌
 
-## Getting Started
+Aplicación SaaS para generar anuncios personalizados usando IA (Google Gemini) a través de n8n.
 
-First, run the development server:
+## 🚀 Inicio Rápido
 
+### 1. Instalar dependencias
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configurar Base de Datos
+1. Accede a tu **Adminer** en `https://adminer.tu-dominio.com`
+2. Copia el contenido de `database/init.sql` y ejecútalo en la pestaña "SQL command"
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Configurar variables de entorno
+Copia `env.template` a `.env` y rellena los valores:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp env.template .env
+```
 
-## Learn More
+Variables requeridas:
+- `DATABASE_URL` - URL de conexión a PostgreSQL (formato: `postgresql://user:pass@host:5432/db`)
+- `AUTH_SECRET` - Generar con `npx auth secret`
+- `AUTH_URL` - URL de tu app (ej: `http://localhost:3000` o dominio pro)
+- `N8N_WEBHOOK_URL` - URL del webhook de n8n
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Ejecutar en desarrollo
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Abrir [http://localhost:3000](http://localhost:3000)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Estructura del Proyecto
 
-## Deploy on Vercel
+```
+app/
+├── app/                  # App Router (Pages & API)
+├── components/           # Componentes UI
+├── lib/
+│   ├── auth.ts           # Configuración NextAuth
+│   ├── prisma.ts         # Cliente Prisma + Adapter
+├── database/
+│   └── init.sql          # Script SQL para Adminer
+├── prisma/
+│   └── schema.prisma     # Schema Prisma
+└── types/                # TypeScript Types
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔧 Stack Tecnológico
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend**: Next.js 14 (App Router)
+- **Database**: PostgreSQL (Prisma ORM)
+- **Auth**: NextAuth.js v5 (Credentials)
+- **IA**: Google Gemini (vía n8n)
+
+## 🚢 Deploy
+
+1. Construir el proyecto:
+```bash
+npm run build
+```
+
+2. Configurar variables de entorno en tu panel de hosting (Vercel/Dokploy).
+
+3. Desplegar.
