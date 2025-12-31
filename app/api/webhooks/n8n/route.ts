@@ -5,7 +5,8 @@ import crypto from 'crypto'
 interface N8NCallbackPayload {
     job_id: string
     status: 'completed' | 'failed'
-    image?: string // base64 encoded PNG
+    image?: string // base64 encoded PNG (Legacy/Optional)
+    output_image_url?: string // Direct URL from fal.ai
     error?: {
         code: string
         message: string
@@ -89,8 +90,12 @@ export async function POST(request: NextRequest) {
             completedAt: new Date(),
         }
 
-        if (body.status === 'completed' && body.image) {
-            updateData.outputImageUrl = `data:image/png;base64,${body.image}`
+        if (body.status === 'completed') {
+            if (body.output_image_url) {
+                updateData.outputImageUrl = body.output_image_url
+            } else if (body.image) {
+                updateData.outputImageUrl = `data:image/png;base64,${body.image}`
+            }
         }
 
         if (body.status === 'failed' && body.error) {

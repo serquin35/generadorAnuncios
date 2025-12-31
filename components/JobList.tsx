@@ -122,10 +122,10 @@ export default function JobList({ initialJobs }: JobListProps) {
                             )}
                         </Link>
 
-                        {/* Delete Button - Fixed Position Inside Card */}
+                        {/* Delete Button - Top Right */}
                         <button
                             onClick={(e) => handleDelete(e, job.id)}
-                            className="absolute top-2 right-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-20"
+                            className="absolute top-3 right-3 p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all z-20"
                             title="Eliminar anuncio"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
