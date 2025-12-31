@@ -165,14 +165,14 @@ export default function JobDetailPage({
                     )}
 
                     {/* Error State */}
-                    {job.status === 'failed' && job.errorMessage && (
+                    {job.status === 'failed' && job.error?.message && (
                         <div className="bg-red-500/10 backdrop-blur-sm rounded-2xl p-6 border border-red-500/30">
                             <h2 className="text-lg font-semibold text-red-300 mb-4 flex items-center gap-2">
                                 <span>⚠️</span> Error
                             </h2>
-                            <p className="text-red-200">{job.errorMessage}</p>
-                            {job.errorCode && (
-                                <p className="text-red-400 text-sm mt-2">Código: {job.errorCode}</p>
+                            <p className="text-red-200">{job.error.message}</p>
+                            {job.error.code && (
+                                <p className="text-red-400 text-sm mt-2">Código: {job.error.code}</p>
                             )}
                         </div>
                     )}
@@ -183,24 +183,24 @@ export default function JobDetailPage({
                             <span>📸</span> Imágenes de Origen
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
-                            {job.characterImage && (
+                            {job.input.character_image_url && (
                                 <div>
                                     <p className="text-gray-400 text-sm mb-2">Personaje</p>
                                     <div className="aspect-square rounded-xl overflow-hidden bg-black/20">
                                         <img
-                                            src={job.characterImage}
+                                            src={job.input.character_image_url}
                                             alt="Character"
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
                                 </div>
                             )}
-                            {job.productImage && (
+                            {job.input.product_image_url && (
                                 <div>
                                     <p className="text-gray-400 text-sm mb-2">Producto</p>
                                     <div className="aspect-square rounded-xl overflow-hidden bg-black/20">
                                         <img
-                                            src={job.productImage}
+                                            src={job.input.product_image_url}
                                             alt="Product"
                                             className="w-full h-full object-cover"
                                         />
