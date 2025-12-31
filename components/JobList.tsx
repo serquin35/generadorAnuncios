@@ -111,10 +111,9 @@ export default function JobList({ initialJobs }: JobListProps) {
                             {job.status === 'completed' && job.output?.image_url && (
                                 <div className="mt-3 h-20 rounded-lg overflow-hidden bg-black/20">
                                     <img
-                                        src={job.output.image_url}
+                                        src={`/api/proxy-image?url=${encodeURIComponent(job.output.image_url)}`}
                                         alt="Generated ad"
                                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                        referrerPolicy="no-referrer"
                                     />
                                 </div>
                             )}
