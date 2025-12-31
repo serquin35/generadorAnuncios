@@ -35,7 +35,13 @@ export async function POST(request: NextRequest) {
         })
 
         // Trigger n8n webhook and WAIT for response (Synchronous Flow)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 80000); // 80s timeout
+
         try {
+            console.log(`Calling n8n at: ${process.env.N8N_WEBHOOK_URL} (Job: ${job.id})`)
+            console.log(`Payload sizes - Instr: ${body.instructions.length}, Char: ${body.character_image.length}, Prod: ${body.product_image.length}`)
+
             const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL!, {
                 method: 'POST',
                 headers: {
@@ -47,9 +53,13 @@ export async function POST(request: NextRequest) {
                     character_image: body.character_image,
                     product_image: body.product_image,
                 }),
+                signal: controller.signal
             })
 
+            clearTimeout(timeoutId);
+
             if (!n8nResponse.ok) {
+                console.error(`n8n error response: ${n8nResponse.status}`)
                 await prisma.job.update({
                     where: { id: job.id },
                     data: {
@@ -62,9 +72,8 @@ export async function POST(request: NextRequest) {
             }
 
             // Parse result from n8n
-            console.log('n8n response status:', n8nResponse.status)
             const n8nData = await n8nResponse.json()
-            console.log('n8n response data received')
+            console.log('n8n response received successfully')
 
             // Helper to find image in nested object
             const findImage = (obj: any): string | null => {
@@ -81,22 +90,19 @@ export async function POST(request: NextRequest) {
                     }
                 }
                 if (typeof obj === 'object') {
-                    // Priority keys
                     const priorityKeys = ['image', 'base64', 'output_image_url', 'url', 'data'];
                     for (const key of priorityKeys) {
-                        const img = findImage(obj[key]);
-                        if (img) {
-                            console.log(`Image found in key: ${key}`);
-                            return img;
+                        if (obj[key]) {
+                            const img = findImage(obj[key]);
+                            if (img) {
+                                console.log(`Image found in key: ${key}`);
+                                return img;
+                            }
                         }
                     }
-                    // Scan all keys
                     for (const key in obj) {
                         const img = findImage(obj[key]);
-                        if (img) {
-                            console.log(`Image found in key: ${key}`);
-                            return img;
-                        }
+                        if (img) return img;
                     }
                 }
                 return null;
@@ -108,7 +114,6 @@ export async function POST(request: NextRequest) {
                 console.log('Valid image found in n8n response. Length:', finalImageValue.length)
                 let cleanedImage = finalImageValue;
 
-                // If it's pure base64 without prefix, add it
                 if (cleanedImage.length > 1000 && !cleanedImage.startsWith('http') && !cleanedImage.startsWith('data:')) {
                     cleanedImage = `data:image/png;base64,${cleanedImage}`;
                 }
@@ -129,9 +134,8 @@ export async function POST(request: NextRequest) {
                 }, { status: 201 })
             }
 
-            console.log('No valid image found in n8n response. Data keys:', Object.keys(n8nData))
+            console.log('No valid image found in n8n response. Data:', JSON.stringify(n8nData).substring(0, 200))
 
-            // If no image but successful response, stay in running or mark as error
             await prisma.job.update({
                 where: { id: job.id },
                 data: { status: 'running' },
@@ -142,16 +146,31 @@ export async function POST(request: NextRequest) {
                 status: 'running',
             }, { status: 201 })
 
-        } catch (n8nError) {
+        } catch (n8nError: any) {
+            clearTimeout(timeoutId);
             console.error('Error calling n8n:', n8nError)
+
+            // If it's a timeout or network error, let it stay in "running"
+            // just in case n8n finishes and calls the webhook later
+            const isTimeout = n8nError.name === 'AbortError' || n8nError.message?.includes('timeout');
+
             await prisma.job.update({
                 where: { id: job.id },
                 data: {
-                    status: 'failed',
-                    errorCode: 'N8N_CONNECTION_ERROR',
-                    errorMessage: 'Error de comunicación con el motor de IA',
+                    status: isTimeout ? 'running' : 'failed',
+                    errorCode: isTimeout ? 'N8N_TIMEOUT' : 'N8N_CONNECTION_ERROR',
+                    errorMessage: isTimeout ? 'La generación está tardando más de lo esperado...' : 'Error de comunicación con el motor de IA',
                 },
             })
+
+            if (isTimeout) {
+                return NextResponse.json({
+                    message: 'La generación continúa en segundo plano. El dashboard se actualizará pronto.',
+                    job_id: job.id,
+                    status: 'running'
+                }, { status: 202 })
+            }
+
             return NextResponse.json({ error: 'Error de conexión' }, { status: 500 })
         }
     } catch (error) {
