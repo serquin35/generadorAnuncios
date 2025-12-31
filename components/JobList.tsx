@@ -114,6 +114,7 @@ export default function JobList({ initialJobs }: JobListProps) {
                                         src={job.output.image_url}
                                         alt="Generated ad"
                                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        referrerPolicy="no-referrer"
                                     />
                                 </div>
                             )}
