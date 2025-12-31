@@ -34,30 +34,19 @@ export async function POST(request: NextRequest) {
             },
         })
 
-        // Trigger n8n webhook using multipart/form-data
+        // Trigger n8n webhook using simple JSON
         try {
-            const formData = new FormData();
-            formData.append('job_id', job.id);
-            formData.append('instructions', body.instructions);
-
-            // Helper to convert base64 data URL to Blob
-            const base64ToBlob = (base64Data: string) => {
-                const [header, data] = base64Data.split(';base64,');
-                const contentType = header.split(':')[1];
-                const buffer = Buffer.from(data, 'base64');
-                return new Blob([buffer], { type: contentType });
-            };
-
-            const charBlob = base64ToBlob(body.character_image);
-            const prodBlob = base64ToBlob(body.product_image);
-
-            // n8n will see these as binary files
-            formData.append('character_image', charBlob, 'character_image.jpg');
-            formData.append('product_image', prodBlob, 'product_image.jpg');
-
             const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL!, {
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    job_id: job.id,
+                    instructions: body.instructions,
+                    character_image: body.character_image,
+                    product_image: body.product_image,
+                }),
             })
 
             if (!n8nResponse.ok) {

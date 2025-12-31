@@ -32,7 +32,8 @@ export default function JobForm() {
         setIsLoading(true)
         setError(null)
 
-        const formData = new FormData(e.currentTarget)
+        const form = e.currentTarget
+        const formData = new FormData(form)
         const instructions = formData.get('instructions') as string
 
         if (!characterPreview || !productPreview) {
@@ -64,7 +65,7 @@ export default function JobForm() {
             setProductPreview(null)
             if (characterInputRef.current) characterInputRef.current.value = ''
             if (productInputRef.current) productInputRef.current.value = ''
-            e.currentTarget.reset()
+            form.reset()
 
             // Refresh the page to show new job
             router.refresh()
