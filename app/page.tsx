@@ -104,7 +104,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="relative z-10 py-8 text-center">
         <p className="text-gray-500 text-sm">
-          © 2024 NanoBanana. Powered by n8n + Google Gemini.
+          © 2025 halloBanana. Powered by cheosDesign.
         </p>
       </footer>
     </div>
