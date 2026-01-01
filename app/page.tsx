@@ -38,10 +38,7 @@ export default function Home() {
       {/* Hero Section */}
       <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] px-6 text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/10 mb-8">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-sm text-gray-300">Powered by Google Gemini AI</span>
-        </div>
+        
 
         {/* Main Heading */}
         <h1 className="text-5xl md:text-7xl font-bold text-white max-w-4xl leading-tight mb-6">
