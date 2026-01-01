@@ -127,7 +127,7 @@ export default function JobForm() {
                     name="instructions"
                     rows={4}
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all resize-none"
                     placeholder="Describe cómo quieres que sea tu anuncio. Por ejemplo: Crea un anuncio navideño con el producto en primer plano y el personaje celebrando..."
                 />
             </div>
@@ -141,7 +141,7 @@ export default function JobForm() {
                     </label>
                     <div
                         onClick={() => characterInputRef.current?.click()}
-                        className="relative aspect-square bg-white/5 border-2 border-dashed border-white/20 rounded-xl flex items-center justify-center cursor-pointer hover:border-yellow-500/50 transition-colors overflow-hidden"
+                        className="relative aspect-square bg-white/5 border-2 border-dashed border-white/20 rounded-xl flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
                     >
                         {characterPreview ? (
                             <img src={characterPreview} alt="Character preview" className="w-full h-full object-cover" />
@@ -168,7 +168,7 @@ export default function JobForm() {
                     </label>
                     <div
                         onClick={() => productInputRef.current?.click()}
-                        className="relative aspect-square bg-white/5 border-2 border-dashed border-white/20 rounded-xl flex items-center justify-center cursor-pointer hover:border-yellow-500/50 transition-colors overflow-hidden"
+                        className="relative aspect-square bg-white/5 border-2 border-dashed border-white/20 rounded-xl flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
                     >
                         {productPreview ? (
                             <img src={productPreview} alt="Product preview" className="w-full h-full object-cover" />
@@ -193,7 +193,7 @@ export default function JobForm() {
             <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 px-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full py-4 px-6 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
                 {isLoading ? (
                     <span className="flex items-center justify-center gap-2">

@@ -45,28 +45,28 @@ export default async function DashboardPage() {
     }))
 
     return (
-        <div className="min-h-screen bg-background text-foreground bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background">
-            {/* Background Grid Pattern (Subtle) */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-50" />
+        <div className="min-h-screen bg-background text-foreground bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,var(--tw-gradient-stops))] from-primary/20 via-background to-background">
+            {/* Background Grid Pattern */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
             {/* Navigation */}
-            <nav className="relative z-10 flex items-center justify-between px-6 lg:px-12 py-6 border-b border-white/10">
-                <Link href="/dashboard" className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <nav className="relative z-10 flex items-center justify-between px-6 lg:px-12 py-6 border-b border-white/5">
+                <Link href="/dashboard" className="flex items-center gap-3 group">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_15px_-5px_theme(colors.primary.DEFAULT)] group-hover:shadow-[0_0_25px_-5px_theme(colors.primary.DEFAULT)] transition-all duration-500">
                         <span className="text-xl">🍌</span>
                     </div>
-                    <span className="text-xl font-bold text-white">NanoBanana</span>
+                    <span className="text-xl font-bold text-foreground">NanoBanana</span>
                 </Link>
 
                 <div className="flex items-center gap-4">
-                    <span className="text-gray-400 hidden sm:inline">{session.user.email}</span>
+                    <span className="text-muted-foreground hidden sm:inline text-sm">{session.user.email}</span>
                     <form action={async () => {
                         'use server'
                         await signOut({ redirectTo: '/login' })
                     }}>
                         <button
                             type="submit"
-                            className="px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium"
+                            className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors font-medium text-sm"
                         >
                             Cerrar Sesión
                         </button>
@@ -77,22 +77,22 @@ export default async function DashboardPage() {
             <main className="relative z-10 max-w-7xl mx-auto px-6 py-10">
                 {/* Header */}
                 <div className="mb-10">
-                    <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-                    <p className="text-gray-400">Crea y gestiona tus anuncios generados con IA</p>
+                    <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
+                    <p className="text-muted-foreground">Crea y gestiona tus anuncios generados con IA</p>
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-8">
                     {/* Create New Job */}
-                    <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
-                        <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                    <div className="bg-card/50 backdrop-blur-sm rounded-3xl p-8 border border-border/50 hover:border-border transition-colors">
+                        <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
                             <span className="text-2xl">✨</span> Crear Nuevo Anuncio
                         </h2>
                         <JobForm />
                     </div>
 
                     {/* Job History */}
-                    <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
-                        <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                    <div className="bg-card/50 backdrop-blur-sm rounded-3xl p-8 border border-border/50 hover:border-border transition-colors">
+                        <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
                             <span className="text-2xl">📋</span> Historial de Anuncios
                         </h2>
                         <JobList initialJobs={formattedJobs} />

@@ -84,7 +84,7 @@ export default function JobList({ initialJobs }: JobListProps) {
                     <div key={job.id} className="relative group">
                         <Link
                             href={`/dashboard/${job.id}`}
-                            className="block p-4 bg-white/5 rounded-xl border border-white/10 hover:border-yellow-500/30 transition-all"
+                            className="block p-4 bg-white/5 rounded-xl border border-white/10 hover:border-primary/50 hover:shadow-[0_0_20px_-10px_theme(colors.primary.DEFAULT)] transition-all"
                         >
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1 min-w-0 pr-12">
