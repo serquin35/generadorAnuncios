@@ -68,28 +68,33 @@ export default function JobDetailPage({
     const statusConfig = {
         pending: { color: 'bg-yellow-500/20 text-yellow-300', icon: '⏳', label: 'Pendiente' },
         running: { color: 'bg-blue-500/20 text-blue-300', icon: '🔄', label: 'Procesando' },
-        completed: { color: 'bg-green-500/20 text-green-300', icon: '✅', label: 'Completado' },
-        failed: { color: 'bg-red-500/20 text-red-300', icon: '❌', label: 'Error' },
+        completed: { color: 'bg-primary/20 text-primary', icon: '✅', label: 'Completado' },
+        failed: { color: 'bg-destructive/20 text-destructive-foreground', icon: '❌', label: 'Error' },
     }
 
     const status = statusConfig[job.status] || statusConfig.pending
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40" />
+        <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+            {/* Vibrant Background Blurs */}
+            <div className="absolute top-[-20%] left-[20%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[100px] pointer-events-none" />
+
+            {/* Grid Pattern */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
             {/* Navigation */}
-            <nav className="relative z-10 flex items-center justify-between px-6 lg:px-12 py-6 border-b border-white/10">
-                <Link href="/dashboard" className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <nav className="relative z-10 flex items-center justify-between px-6 lg:px-12 py-6 border-b border-border/50">
+                <Link href="/dashboard" className="flex items-center gap-3 group">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_15px_-5px_theme(colors.primary.DEFAULT)] group-hover:shadow-[0_0_25px_-5px_theme(colors.primary.DEFAULT)] transition-all duration-500">
                         <span className="text-xl">🍌</span>
                     </div>
-                    <span className="text-xl font-bold text-white">NanoBanana</span>
+                    <span className="text-xl font-bold text-foreground">halloBanana</span>
                 </Link>
 
                 <Link
                     href="/dashboard"
-                    className="px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2"
+                    className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors font-medium flex items-center gap-2 text-sm"
                 >
                     ← Volver al Dashboard
                 </Link>
@@ -99,13 +104,13 @@ export default function JobDetailPage({
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-4 mb-4">
-                        <h1 className="text-3xl font-bold text-white">Detalle del Anuncio</h1>
+                        <h1 className="text-3xl font-bold text-foreground">Detalle del Anuncio</h1>
                         <span className={`px-4 py-2 rounded-full text-sm font-medium ${status.color} flex items-center gap-2`}>
                             <span className={job.status === 'running' ? 'animate-spin' : ''}>{status.icon}</span>
                             {status.label}
                         </span>
                     </div>
-                    <p className="text-gray-400">
+                    <p className="text-muted-foreground">
                         Creado el {new Date(job.created_at).toLocaleDateString('es-ES', {
                             day: 'numeric',
                             month: 'long',
@@ -119,20 +124,20 @@ export default function JobDetailPage({
                 {/* Content */}
                 <div className="space-y-8">
                     {/* Instructions */}
-                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                        <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
+                        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                             <span>📝</span> Instrucciones
                         </h2>
-                        <p className="text-gray-300 whitespace-pre-wrap">{job.input.instructions}</p>
+                        <p className="text-muted-foreground whitespace-pre-wrap">{job.input.instructions}</p>
                     </div>
 
                     {/* Result */}
                     {job.status === 'completed' && job.output?.image_url && (
-                        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
+                            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                                 <span>🎨</span> Resultado Generado
                             </h2>
-                            <div className="rounded-xl overflow-hidden bg-black/20">
+                            <div className="rounded-xl overflow-hidden bg-black/20 border border-border/50">
                                 <img
                                     src={job.output.image_url}
                                     alt="Generated advertisement"
@@ -141,7 +146,7 @@ export default function JobDetailPage({
                             </div>
                             <button
                                 onClick={() => handleDownload(job.output!.image_url, `nanobanana-ad-${job.id}.png`)}
-                                className="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all"
+                                className="mt-6 inline-flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all cursor-pointer"
                             >
                                 📥 Descargar Imagen
                             </button>
@@ -150,13 +155,13 @@ export default function JobDetailPage({
 
                     {/* Processing State */}
                     {(job.status === 'pending' || job.status === 'running') && (
-                        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-12 border border-white/10 text-center">
+                        <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-12 border border-border/50 text-center">
                             <div className="animate-pulse">
                                 <span className="text-6xl mb-4 block animate-bounce">🎨</span>
-                                <h2 className="text-xl font-semibold text-white mb-2">
+                                <h2 className="text-xl font-semibold text-foreground mb-2">
                                     {job.status === 'pending' ? 'Esperando procesamiento...' : 'Generando tu anuncio...'}
                                 </h2>
-                                <p className="text-gray-400">
+                                <p className="text-muted-foreground">
                                     Esto puede tomar unos segundos. La página se actualizará automáticamente.
                                 </p>
                             </div>
@@ -165,27 +170,27 @@ export default function JobDetailPage({
 
                     {/* Error State */}
                     {job.status === 'failed' && job.error?.message && (
-                        <div className="bg-red-500/10 backdrop-blur-sm rounded-2xl p-6 border border-red-500/30">
-                            <h2 className="text-lg font-semibold text-red-300 mb-4 flex items-center gap-2">
+                        <div className="bg-destructive/10 backdrop-blur-sm rounded-2xl p-6 border border-destructive/20">
+                            <h2 className="text-lg font-semibold text-destructive-foreground mb-4 flex items-center gap-2">
                                 <span>⚠️</span> Error
                             </h2>
-                            <p className="text-red-200">{job.error.message}</p>
+                            <p className="text-destructive-foreground/90">{job.error.message}</p>
                             {job.error.code && (
-                                <p className="text-red-400 text-sm mt-2">Código: {job.error.code}</p>
+                                <p className="text-destructive-foreground/70 text-sm mt-2">Código: {job.error.code}</p>
                             )}
                         </div>
                     )}
 
                     {/* Source Images */}
-                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                        <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
+                        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                             <span>📸</span> Imágenes de Origen
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
                             {job.input.character_image_url && (
                                 <div>
-                                    <p className="text-gray-400 text-sm mb-2">Personaje</p>
-                                    <div className="aspect-square rounded-xl overflow-hidden bg-black/20">
+                                    <p className="text-muted-foreground text-sm mb-2">Personaje</p>
+                                    <div className="aspect-square rounded-xl overflow-hidden bg-black/20 border border-border/50">
                                         <img
                                             src={job.input.character_image_url}
                                             alt="Character"
@@ -196,8 +201,8 @@ export default function JobDetailPage({
                             )}
                             {job.input.product_image_url && (
                                 <div>
-                                    <p className="text-gray-400 text-sm mb-2">Producto</p>
-                                    <div className="aspect-square rounded-xl overflow-hidden bg-black/20">
+                                    <p className="text-muted-foreground text-sm mb-2">Producto</p>
+                                    <div className="aspect-square rounded-xl overflow-hidden bg-black/20 border border-border/50">
                                         <img
                                             src={job.input.product_image_url}
                                             alt="Product"
@@ -209,6 +214,11 @@ export default function JobDetailPage({
                         </div>
                     </div>
                 </div>
+
+                {/* Footer */}
+                <p className="text-center text-muted-foreground text-sm mt-12">
+                    © 2025 halloBanana. Powered by cheosDesign.
+                </p>
             </main>
         </div>
     )
