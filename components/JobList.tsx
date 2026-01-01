@@ -109,11 +109,11 @@ export default function JobList({ initialJobs }: JobListProps) {
 
                             {/* Preview thumbnail if completed */}
                             {job.status === 'completed' && job.output?.image_url && (
-                                <div className="mt-3 h-20 rounded-lg overflow-hidden bg-black/20">
+                                <div className="mt-3 h-32 rounded-lg overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center">
                                     <img
                                         src={job.output.image_url}
                                         alt="Generated ad"
-                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                                     />
                                 </div>
                             )}
@@ -133,13 +133,13 @@ export default function JobList({ initialJobs }: JobListProps) {
                             )}
                         </Link>
 
-                        {/* Delete Button - Top Right */}
+                        {/* Delete Button - Moved outside/adjusted */}
                         <button
                             onClick={(e) => handleDelete(e, job.id)}
-                            className="absolute top-3 right-3 p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all z-20"
+                            className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all z-30 opacity-0 group-hover:opacity-100"
                             title="Eliminar anuncio"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
