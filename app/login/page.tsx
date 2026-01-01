@@ -50,7 +50,7 @@ export default function LoginPage() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 text-primary shadow-[0_0_30px_-10px_theme(colors.primary.DEFAULT)] mb-4">
                         <span className="text-3xl">🍌</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">NanoBanana</h1>
+                    <h1 className="text-3xl font-bold text-foreground mb-2">halloBanana</h1>
                     <p className="text-muted-foreground">Generador de Anuncios con IA</p>
                 </div>
 
@@ -113,8 +113,8 @@ export default function LoginPage() {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-gray-500 text-sm mt-8">
-                    Powered by Google Gemini + n8n
+                <p className="text-center text-muted-foreground text-sm mt-8">
+                    © 2025 halloBanana. Powered by cheosDesign.
                 </p>
             </div>
         </div>
