@@ -1,15 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Default to Dark Mode (Pointer AI Theme) */
-  --background: 210 11% 7%;
-  --foreground: 160 14% 93%;
+  /* Pointer AI Theme - Adjusted Brightness */
+  --background: 220 25% 12%;
+  /* Deeper Slate, not Black */
+  --foreground: 210 20% 98%;
 
-  --card: 210 11% 9%;
-  --card-foreground: 160 14% 93%;
+  --card: 220 25% 16%;
+  /* Lighter Card */
+  --card-foreground: 210 20% 98%;
 
-  --popover: 210 11% 7%;
-  --popover-foreground: 160 14% 93%;
+  --popover: 220 25% 12%;
+  --popover-foreground: 210 20% 98%;
 
   --primary: 165 96% 71%;
   --primary-foreground: 160 8% 6%;

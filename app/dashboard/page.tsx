@@ -45,8 +45,12 @@ export default async function DashboardPage() {
     }))
 
     return (
-        <div className="min-h-screen bg-background text-foreground bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,var(--tw-gradient-stops))] from-primary/20 via-background to-background">
-            {/* Background Grid Pattern */}
+        <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+            {/* Vibrant Background Blurs */}
+            <div className="absolute top-[-20%] left-[20%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[100px] pointer-events-none" />
+
+            {/* Grid Pattern */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
             {/* Navigation */}
