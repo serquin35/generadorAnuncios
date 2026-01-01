@@ -59,7 +59,7 @@ export default async function DashboardPage() {
                     <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_15px_-5px_theme(colors.primary.DEFAULT)] group-hover:shadow-[0_0_25px_-5px_theme(colors.primary.DEFAULT)] transition-all duration-500">
                         <span className="text-xl">🍌</span>
                     </div>
-                    <span className="text-xl font-bold text-foreground">NanoBanana</span>
+                    <span className="text-xl font-bold text-foreground">halloBanana</span>
                 </Link>
 
                 <div className="flex items-center gap-4">
@@ -102,6 +102,11 @@ export default async function DashboardPage() {
                         <JobList initialJobs={formattedJobs} />
                     </div>
                 </div>
+
+                {/* Footer */}
+                <p className="text-center text-muted-foreground text-sm mt-12 pb-4">
+                    © 2025 halloBanana. Powered by cheosDesign.
+                </p>
             </main>
         </div>
     )
