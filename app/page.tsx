@@ -89,7 +89,7 @@ export default function Home() {
               <span className="text-2xl">🎨</span>
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">IA Hace la Magia</h3>
-            <p className="text-muted-foreground">Google Gemini genera tu anuncio personalizado en cuestión de segundos.</p>
+            <p className="text-muted-foreground">Internamente la IA genera tu anuncio personalizado en cuestión de segundos.</p>
           </div>
         </div>
       </main>
@@ -97,7 +97,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="relative z-10 py-8 text-center border-t border-border/10 mt-10">
         <p className="text-muted-foreground text-sm">
-          © 2025 halloBanana. Powered by cheosDesign.
+          © 2025 HalloBanana. Powered by cheosDesign.
         </p>
       </footer>
     </div>
