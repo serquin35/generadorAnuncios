@@ -63,6 +63,10 @@ export default async function DashboardPage() {
                 </Link>
 
                 <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-500 text-sm font-medium">
+                        <span>🍌</span>
+                        <span>{session.user.credits ?? 0}</span>
+                    </div>
                     <span className="text-muted-foreground hidden sm:inline text-sm">{session.user.email}</span>
                     <form action={async () => {
                         'use server'
@@ -91,7 +95,7 @@ export default async function DashboardPage() {
                         <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 flex items-center gap-2">
                             <span className="text-xl md:text-2xl">✨</span> Crear Nuevo Anuncio
                         </h2>
-                        <JobForm />
+                        <JobForm userCredits={session.user.credits ?? 0} />
                     </div>
 
                     {/* Job History */}

@@ -47,6 +47,7 @@ model User {
   accounts Account[]
   sessions Session[]
   jobs     Job[]
+  credits  Int       @default(3)
 }
 
 model VerificationToken {

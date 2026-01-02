@@ -30,16 +30,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const job = await prisma.job.create({
-      data: {
-        userId: session.user.id,
-        status: 'pending',
-        instructions: body.instructions,
-        characterImage: body.character_image,
-        productImage: body.product_image,
-      },
+    // Transaction: Check credits -> Deduct credit -> Create Job
+    const job = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { credits: true },
+      })
+
+      if (!user || user.credits <= 0) {
+        throw new Error('INSUFFICIENT_CREDITS')
+      }
+
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { credits: { decrement: 1 } },
+      })
+
+      return tx.job.create({
+        data: {
+          userId: session.user.id,
+          status: 'pending',
+          instructions: body.instructions,
+          characterImage: body.character_image,
+          productImage: body.product_image,
+        },
+      })
     })
 
+    // Trigger n8n workflow (non-blocking for the transaction, but vital)
     await fetch(process.env.N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -55,62 +73,69 @@ export async function POST(request: NextRequest) {
       {
         job_id: job.id,
         status: 'pending',
+        remaining_credits: (await prisma.user.findUnique({ where: { id: session.user.id } }))?.credits
       },
       { status: 201 }
     )
 
   } catch (error) {
+    if ((error as Error).message === 'INSUFFICIENT_CREDITS') {
+      return NextResponse.json(
+        { error: 'Te has quedado sin bananas 🍌. Recarga para seguir creando.' },
+        { status: 403 }
+      )
+    }
     console.error('Error in POST /api/jobs:', error)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
 
 export async function GET() {
-    try {
-        const session = await auth()
+  try {
+    const session = await auth()
 
-        if (!session?.user) {
-            return NextResponse.json(
-                { error: 'No autorizado' },
-                { status: 401 }
-            )
-        }
-
-        const jobs = await prisma.job.findMany({
-            where: { userId: session.user.id },
-            orderBy: { createdAt: 'desc' },
-        })
-
-        // Transform to expected format
-        const formattedJobs = jobs.map(job => ({
-            id: job.id,
-            status: job.status,
-            input: {
-                instructions: job.instructions,
-                character_image_url: job.characterImage,
-                product_image_url: job.productImage,
-            },
-            output: job.outputImageUrl ? {
-                image_url: job.outputImageUrl,
-                generated_at: job.completedAt?.toISOString() || '',
-                // ad_copy: (job as any).adCopy || null, // Comentado para evitar error de Prisma
-                ad_copy: null, // Usando null por ahora
-            } : null,
-            error: job.errorMessage ? {
-                code: job.errorCode || 'UNKNOWN',
-                message: job.errorMessage,
-            } : null,
-            created_at: job.createdAt.toISOString(),
-            completed_at: job.completedAt?.toISOString() || null,
-        }))
-
-        return NextResponse.json({ jobs: formattedJobs })
-
-    } catch (error) {
-        console.error('Error in GET /api/jobs:', error)
-        return NextResponse.json(
-            { error: 'Error interno del servidor' },
-            { status: 500 }
-        )
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'No autorizado' },
+        { status: 401 }
+      )
     }
+
+    const jobs = await prisma.job.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // Transform to expected format
+    const formattedJobs = jobs.map(job => ({
+      id: job.id,
+      status: job.status,
+      input: {
+        instructions: job.instructions,
+        character_image_url: job.characterImage,
+        product_image_url: job.productImage,
+      },
+      output: job.outputImageUrl ? {
+        image_url: job.outputImageUrl,
+        generated_at: job.completedAt?.toISOString() || '',
+        // ad_copy: (job as any).adCopy || null, // Comentado para evitar error de Prisma
+        ad_copy: null, // Usando null por ahora
+      } : null,
+      error: job.errorMessage ? {
+        code: job.errorCode || 'UNKNOWN',
+        message: job.errorMessage,
+      } : null,
+      created_at: job.createdAt.toISOString(),
+      completed_at: job.completedAt?.toISOString() || null,
+    }))
+
+    return NextResponse.json({ jobs: formattedJobs })
+
+  } catch (error) {
+    console.error('Error in GET /api/jobs:', error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
 }

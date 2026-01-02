@@ -8,6 +8,29 @@ import { authConfig } from '@/auth.config'
 export const { handlers, signIn, signOut, auth } = NextAuth({
     ...authConfig,
     adapter: PrismaAdapter(prisma),
+    session: { strategy: 'jwt' },
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id
+            }
+            return token
+        },
+        async session({ session, token }) {
+            if (session.user && token.sub) {
+                session.user.id = token.sub
+
+                // Fetch fresh credits
+                const user = await prisma.user.findUnique({
+                    where: { id: token.sub },
+                    select: { credits: true },
+                })
+
+                session.user.credits = user?.credits ?? 0
+            }
+            return session
+        },
+    },
     providers: [
         Credentials({
             name: 'credentials',

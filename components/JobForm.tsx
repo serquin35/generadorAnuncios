@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function JobForm() {
+export default function JobForm({ userCredits = 0 }: { userCredits: number }) {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -62,6 +62,8 @@ export default function JobForm() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (userCredits <= 0) return
+
         setIsLoading(true)
         setError(null)
 
@@ -111,6 +113,16 @@ export default function JobForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
+            {userCredits <= 0 && (
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center gap-3 text-yellow-500">
+                    <span className="text-xl">⚠️</span>
+                    <div>
+                        <p className="font-semibold">Te has quedado sin créditos</p>
+                        <p className="text-sm opacity-80">Recarga tu cuenta para seguir creando.</p>
+                    </div>
+                </div>
+            )}
+
             {error && (
                 <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm">
                     {error}
@@ -192,8 +204,8 @@ export default function JobForm() {
             {/* Submit Button */}
             <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full py-4 px-6 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={isLoading || userCredits <= 0}
+                className="w-full py-4 px-6 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:bg-gray-700 disabled:text-gray-400 disabled:shadow-none"
             >
                 {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -203,8 +215,10 @@ export default function JobForm() {
                         </svg>
                         Generando...
                     </span>
+                ) : userCredits <= 0 ? (
+                    'Sin créditos insuficientes 🍌'
                 ) : (
-                    'Generar Anuncio ✨'
+                    'Generar Anuncio (1 🍌)'
                 )}
             </button>
         </form>
