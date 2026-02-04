@@ -9,6 +9,7 @@ CREATE TABLE "User" (
     "emailVerified" TIMESTAMP(3),
     "image" TEXT,
     "password" TEXT,
+    "credits" INTEGER NOT NULL DEFAULT 3,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -74,6 +75,7 @@ CREATE TABLE "Job" (
     "characterImage" TEXT NOT NULL,
     "productImage" TEXT NOT NULL,
     "outputImageUrl" TEXT,
+    "adCopy" TEXT,
     "errorCode" TEXT,
     "errorMessage" TEXT,
     "n8nExecutionId" TEXT,
