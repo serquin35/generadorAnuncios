@@ -89,9 +89,9 @@ export default async function DashboardPage() {
                     <p className="text-sm md:text-base text-muted-foreground">Crea y gestiona tus anuncios generados con IA</p>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 w-full">
                     {/* Create New Job */}
-                    <div className="bg-card/50 backdrop-blur-sm rounded-2xl md:rounded-3xl p-5 md:p-8 border border-border/50 hover:border-border transition-colors">
+                    <div className="bg-card/50 backdrop-blur-sm rounded-2xl md:rounded-3xl p-5 md:p-8 border border-border/50 hover:border-border transition-colors w-full">
                         <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 flex items-center gap-2">
                             <span className="text-xl md:text-2xl">✨</span> Crear Nuevo Anuncio
                         </h2>
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
                     </div>
 
                     {/* Job History */}
-                    <div className="bg-card/50 backdrop-blur-sm rounded-2xl md:rounded-3xl p-5 md:p-8 border border-border/50 hover:border-border transition-colors">
+                    <div className="bg-card/50 backdrop-blur-sm rounded-2xl md:rounded-3xl p-5 md:p-8 border border-border/50 hover:border-border transition-colors w-full">
                         <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 flex items-center gap-2">
                             <span className="text-xl md:text-2xl">📋</span> Historial de Anuncios
                         </h2>
